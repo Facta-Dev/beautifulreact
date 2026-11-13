@@ -1,0 +1,56 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "beautiful-react",
+  "version": "0.1.0",
+  "description": "Write, review, port, and enforce idiomatic React 19 + TypeScript: three skills distilled from the React 19 documentation, the React patterns handbook, the TypeScript strict handbook, and the facta frontend handbook, plus a drop-in eslint config.",
+  "author": {
+    "name": "Facta-Dev",
+    "url": "https://github.com/Facta-Dev"
+  },
+  "homepage": "https://github.com/Facta-Dev/beautifulreact",
+  "repository": "https://github.com/Facta-Dev/beautifulreact",
+  "license": "MIT",
+  "keywords": [
+    "accessibility",
+    "best-practices",
+    "code-review",
+    "eslint",
+    "hooks",
+    "mvvm",
+    "porting",
+    "react",
+    "skill",
+    "style-guide",
+    "typescript"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Beautiful React",
+        "shortDescription": "Write, review, port React",
+        "longDescription": "Three skills for React 19 + TypeScript developers, distilled from the React 19 documentation, the React patterns handbook, the TypeScript strict handbook, and the facta frontend handbook.\n\nreact-best-practices guides new React code: function components and composition, hooks discipline, one discriminated union per screen, derived state instead of mirrored state, the View -> ViewModel -> SDK layer contract, typed errors, forms, a11y, performance, security, and tests.\n\nreact-review reviews a component, hook, feature folder, or diff and returns a prioritized report. A broken architecture contract ranks above everything. Every finding cites a file and line, the rule it breaks, and the smallest fix.\n\nreact-port ports Vue, Svelte, Angular, jQuery, vanilla JavaScript, or class components to React 19 with the same behavior. It ports the original tests first and writes a PORTING.md that lists every deliberate difference.\n\nThe skills contain instructions and reference text only. They make no network calls and collect no data. When a Node.js toolchain is available, the skills run tsc, eslint, and vitest on your project; without one, they work from the code alone. A drop-in eslint config is available in the GitHub repository.",
+        "developerName": "Facta-Dev",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Write idiomatic React",
+          "Review React code with cited rules",
+          "Port UI code to React with the same behavior"
+        ],
+        "websiteURL": "https://github.com/Facta-Dev/beautifulreact",
+        "supportURL": "https://github.com/Facta-Dev/beautifulreact/issues",
+        "privacyPolicyURL": "https://github.com/Facta-Dev/beautifulreact/blob/main/PRIVACY.md",
+        "defaultPrompt": [
+          "Review this React feature and list what to fix first",
+          "Port this Vue component to idiomatic React",
+          "Write a typed ViewModel hook for this screen"
+        ],
+        "brandColor": "#61DAFB",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      },
+      "publication": {
+        "release_notes": "Initial release: three React skills with the layer contract, a proven eslint config, and JSX review coverage."
+      }
+    }
+  }
+}

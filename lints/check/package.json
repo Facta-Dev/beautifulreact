@@ -1,0 +1,23 @@
+{
+  "name": "lints-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Violation harness proving every pinned rule in the Beautiful React drop-in eslint config fires.",
+  "scripts": {
+    "check": "tsc --noEmit -p . && eslint --format json src"
+  },
+  "devDependencies": {
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.5",
+    "@eslint/js": "^9.39.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1"
+  }
+}

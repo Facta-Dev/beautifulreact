@@ -1,0 +1,4 @@
+{
+  "_comment": "No standalone ts blocks ship yet: the skills use tsx fences (review-checked) and the lints/check project compiles the TypeScript + TSX harness instead. Add an entry here when a self-contained ts block lands.",
+  "files": {}
+}
