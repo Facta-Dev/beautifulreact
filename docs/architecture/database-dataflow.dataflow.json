@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "beautifulreact — Dataflow: browser storage and HTTP",
+    "quality_profile": "showcase",
+    "output": "database-dataflow.dataflow.html"
+  },
+  "stages": [
+    { "label": "Browser" },
+    { "label": "App layers" },
+    { "label": "Client state" },
+    { "label": "Backend" }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "type": "database",
+      "label": "Browser storage",
+      "sublabel": "httpOnly cookie · in-memory token",
+      "stage": 0,
+      "row": 1
+    },
+    {
+      "id": "view",
+      "type": "frontend",
+      "label": "View",
+      "sublabel": "renders one state",
+      "stage": 1,
+      "row": 0
+    },
+    {
+      "id": "vm",
+      "type": "backend",
+      "label": "ViewModel",
+      "sublabel": "status union · commands",
+      "stage": 1,
+      "row": 1
+    },
+    {
+      "id": "sdk",
+      "type": "backend",
+      "label": "SDK",
+      "sublabel": "DTOs · error envelope",
+      "stage": 1,
+      "row": 2
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "label": "Query cache",
+      "sublabel": "in-memory · lost on reload",
+      "stage": 2,
+      "row": 1
+    },
+    {
+      "id": "api",
+      "type": "external",
+      "label": "Backend API",
+      "sublabel": "authoritative state",
+      "stage": 3,
+      "row": 1
+    }
+  ],
+  "flows": [
+    {
+      "id": "df1",
+      "from": "browser",
+      "to": "sdk",
+      "label": "token",
+      "variant": "security"
+    },
+    {
+      "id": "df2",
+      "from": "vm",
+      "to": "sdk",
+      "label": "typed call"
+    },
+    {
+      "id": "df3",
+      "from": "sdk",
+      "to": "api",
+      "label": "HTTP + headers",
+      "variant": "emphasis"
+    },
+    {
+      "id": "df4",
+      "from": "api",
+      "to": "sdk",
+      "label": "DTO | envelope"
+    },
+    {
+      "id": "df5",
+      "from": "sdk",
+      "to": "vm",
+      "label": "normalized"
+    },
+    {
+      "id": "df6",
+      "from": "vm",
+      "to": "view",
+      "label": "state union"
+    },
+    {
+      "id": "df7",
+      "from": "sdk",
+      "to": "cache",
+      "label": "cache write",
+      "variant": "dashed"
+    },
+    {
+      "id": "df8",
+      "from": "cache",
+      "to": "vm",
+      "label": "cached rows",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The only client-side persistence",
+      "items": [
+        "browser storage holds the credential: an httpOnly cookie or a token in memory — never a secret in the bundle, because a bundled key is public",
+        "the query cache holds server state in memory, keyed by a stable serializable key; it is a cache, not a database",
+        "the app writes no durable data of its own: the backend owns the state"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Where the data actually lives",
+      "items": [
+        "the Backend API is the system of record: it validates, authorizes and returns DTOs",
+        "the SDK normalizes HTTP into a typed union — the envelope { error: { code, message, requiredPermission?, correlationId } } becomes a value, never a thrown string",
+        "the ViewModel maps each code to a screen state and renders it; the View only draws"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Nothing durable in the browser",
+      "items": [
+        "a reload empties the cache: the screen refetches and shows the loading state again",
+        "the query key carries every input the query depends on — a key that omits the search term serves the wrong entry",
+        "after a mutation the layer invalidates by prefix instead of refetching the world"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "The data that must not leak",
+      "items": [
+        "a client error is reported without personal data: no token, no payload, only the correlation id",
+        "server data is untrusted: it can carry markup, a hostile file name or a redirect, so it is sanitized at the boundary",
+        "URLs are validated before rendering: allowlist https:, mailto: and relative schemes at the boundary"
+      ]
+    }
+  ]
+}

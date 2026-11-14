@@ -1,0 +1,222 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "beautifulreact — Auth & Session Algorithm",
+    "quality_profile": "showcase",
+    "output": "auth-algorithm.workflow.html"
+  },
+  "lanes": [
+    {
+      "id": "ui",
+      "label": "View"
+    },
+    {
+      "id": "vm",
+      "label": "ViewModel"
+    },
+    {
+      "id": "sdk",
+      "label": "SDK"
+    },
+    {
+      "id": "ports",
+      "label": "TokenStore"
+    },
+    {
+      "id": "api",
+      "label": "Backend API"
+    }
+  ],
+  "phases": [
+    {
+      "id": "read",
+      "label": "Read the credential",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "send",
+      "label": "Send it",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "decide",
+      "label": "Let the server decide",
+      "fromCol": 4,
+      "toCol": 5
+    }
+  ],
+  "mainPath": [
+    "mount",
+    "call",
+    "attach",
+    "authorize",
+    "envelope",
+    "map",
+    "render"
+  ],
+  "nodes": [
+    {
+      "id": "mount",
+      "lane": "ui",
+      "col": 0,
+      "type": "frontend",
+      "label": "Screen mounts",
+      "sublabel": "View → useLeads()"
+    },
+    {
+      "id": "call",
+      "lane": "vm",
+      "col": 1,
+      "type": "backend",
+      "label": "ViewModel calls",
+      "sublabel": "sdk.app.funnels.leads.list()"
+    },
+    {
+      "id": "token",
+      "lane": "ports",
+      "col": 2,
+      "type": "database",
+      "label": "TokenStore read",
+      "sublabel": "in-memory · httpOnly cookie"
+    },
+    {
+      "id": "attach",
+      "lane": "sdk",
+      "col": 2,
+      "type": "backend",
+      "label": "Attach headers",
+      "sublabel": "auth · tenant · correlation"
+    },
+    {
+      "id": "authorize",
+      "lane": "api",
+      "col": 3,
+      "type": "security",
+      "label": "Server authorizes",
+      "sublabel": "the API is the authority"
+    },
+    {
+      "id": "envelope",
+      "lane": "api",
+      "col": 4,
+      "type": "backend",
+      "label": "Envelope",
+      "sublabel": "{ code · message · correlationId }"
+    },
+    {
+      "id": "refresh",
+      "lane": "sdk",
+      "col": 3,
+      "type": "backend",
+      "label": "Refresh once",
+      "sublabel": "401 → a new token"
+    },
+    {
+      "id": "map",
+      "lane": "vm",
+      "col": 5,
+      "type": "backend",
+      "label": "Map to state",
+      "sublabel": "loading · empty · ready · forbidden · error"
+    },
+    {
+      "id": "render",
+      "lane": "ui",
+      "col": 5,
+      "type": "frontend",
+      "label": "Render the state",
+      "sublabel": "one switch, no booleans"
+    }
+  ],
+  "edges": [
+    {
+      "id": "w1",
+      "from": "mount",
+      "to": "call"
+    },
+    {
+      "id": "w2",
+      "from": "call",
+      "to": "attach",
+      "label": "typed call"
+    },
+    {
+      "id": "w3",
+      "from": "token",
+      "to": "attach",
+      "label": "token"
+    },
+    {
+      "id": "w4",
+      "from": "attach",
+      "to": "authorize",
+      "label": "GET + headers",
+      "variant": "emphasis"
+    },
+    {
+      "id": "w5",
+      "from": "authorize",
+      "to": "envelope",
+      "label": "200 · 401 · 403"
+    },
+    {
+      "id": "w6",
+      "from": "envelope",
+      "to": "map",
+      "label": "normalized union"
+    },
+    {
+      "id": "w7",
+      "from": "map",
+      "to": "render",
+      "label": "state"
+    },
+    {
+      "id": "w8",
+      "from": "authorize",
+      "to": "refresh",
+      "label": "401"
+    },
+    {
+      "id": "w9",
+      "from": "refresh",
+      "to": "attach",
+      "label": "retry once",
+      "fromSide": "left",
+      "toSide": "right"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The token never enters the View",
+      "items": [
+        "the View may not import the SDK, call fetch or read a token — the no-restricted-imports override for **/views/** and **/app/** makes the fetch-in-a-view a lint error, not a convention",
+        "the SDK owns the credential: auth, tenant, correlation, idempotency and client-info headers are interceptors, never per-call code",
+        "tokens live in memory or in an httpOnly cookie; a secret shipped to the browser is public, so an API key never belongs in a bundle"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The server decides",
+      "items": [
+        "the {userType} route segment is an experience namespace, never a security decision — the URL never authorizes anything",
+        "a permission is checked to shape the UI (can(\"leads.delete\")); the backend authorizes every request regardless of what the client renders",
+        "a route guard hides or redirects for UX; the API rejects the request either way"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "401 is not 403",
+      "items": [
+        "401 means the session is not valid: refresh the token once and retry, then send the user to sign in again",
+        "403 means the session is valid and the permission is missing — a forbidden state, never a retry",
+        "the SDK normalizes { error: { code, message, requiredPermission?, correlationId } } into a typed union; the ViewModel maps each code to its own screen state and the correlation id is copyable on the error screen"
+      ]
+    }
+  ]
+}

@@ -184,6 +184,29 @@ per rule with a `// expect:<rule>` marker, plus a clean control.
 stays quiet, if anything unmarked fires, or if `tsc --noEmit` fails on the
 same files. Every rule in the config is proven, not assumed.
 
+## Architecture diagrams
+
+The repository ships eight Archify diagrams under `docs/architecture/`, each one a
+standalone HTML page you can open, zoom and read in a browser. The index, with the source
+JSON for every diagram, is in
+[`docs/architecture/README.md`](docs/architecture/README.md).
+
+| Diagram | What it shows |
+|---|---|
+| [c4-containers](docs/architecture/c4-containers.html) | The delivery mechanism and the application it produces |
+| [services-slices](docs/architecture/services-slices.architecture.html) | The module topology and the lint walls between the layers |
+| [auth-algorithm](docs/architecture/auth-algorithm.workflow.html) | The credential algorithm, from the mounted View to the authorized request |
+| [outbox-algorithm](docs/architecture/outbox-algorithm.workflow.html) | The async path: the query cache, its retries and the optimistic rollback |
+| [auth-sequence](docs/architecture/auth-sequence.sequence.html) | One request end to end, and the single screen state it produces |
+| [outbox-sequence](docs/architecture/outbox-sequence.sequence.html) | The async path in time, from a cache miss to a retried mutation |
+| [database-dataflow](docs/architecture/database-dataflow.dataflow.html) | Where the data goes: browser storage, the client cache and the Backend API |
+| [runtime-lifecycle](docs/architecture/runtime-lifecycle.lifecycle.html) | The runtime states of a screen, and the endings |
+
+The diagrams are conceptual and source-backed: every component and edge traces to this
+README, to the frontend architecture reference and to the lint config. Two roles are
+adapted for a browser client — there is no client-side outbox and no client-side database,
+so the async path is the query cache and the data path is browser storage plus HTTP.
+
 ## What it does not do
 
 - The skills contain instructions and reference text only. They make no
@@ -196,6 +219,9 @@ same files. Every rule in the config is proven, not assumed.
 ## Repository layout
 
 ```text
+docs/
+  architecture/          eight Archify diagrams (C4, slices, auth,
+                         outbox, dataflow, lifecycle)
 skills/
   react-best-practices/   SKILL.md + references/ (React 19, patterns,
                           architecture, strict TypeScript)

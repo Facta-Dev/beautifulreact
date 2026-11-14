@@ -1,0 +1,135 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "beautifulreact — Async Delivery: the query cache",
+    "quality_profile": "showcase",
+    "output": "outbox-algorithm.workflow.html"
+  },
+  "lanes": [
+    { "id": "vm", "label": "ViewModel" },
+    { "id": "query", "label": "Query layer" },
+    { "id": "sdk", "label": "SDK" },
+    { "id": "api", "label": "Backend API" }
+  ],
+  "phases": [
+    { "id": "key", "label": "Key the request", "fromCol": 0, "toCol": 1 },
+    { "id": "fetch", "label": "Fetch and dedupe", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "settle", "label": "Settle or retry", "fromCol": 4, "toCol": 5 }
+  ],
+  "mainPath": ["ask", "key", "dedupe", "fetch", "respond", "store", "notify"],
+  "nodes": [
+    {
+      "id": "ask",
+      "lane": "vm",
+      "col": 0,
+      "type": "backend",
+      "label": "ViewModel asks",
+      "sublabel": "useLeads() → one query"
+    },
+    {
+      "id": "key",
+      "lane": "query",
+      "col": 1,
+      "type": "database",
+      "label": "Query key",
+      "sublabel": "stable · serializable · every input"
+    },
+    {
+      "id": "dedupe",
+      "lane": "query",
+      "col": 2,
+      "type": "backend",
+      "label": "Dedupe in flight",
+      "sublabel": "one request per key"
+    },
+    {
+      "id": "fetch",
+      "lane": "sdk",
+      "col": 3,
+      "type": "backend",
+      "label": "SDK method",
+      "sublabel": "typed call · abort signal"
+    },
+    {
+      "id": "respond",
+      "lane": "api",
+      "col": 4,
+      "type": "external",
+      "label": "Backend API",
+      "sublabel": "200 · 4xx · 5xx"
+    },
+    {
+      "id": "retry",
+      "lane": "query",
+      "col": 4,
+      "type": "backend",
+      "label": "Retry with backoff",
+      "sublabel": "5xx · network · rateLimited"
+    },
+    {
+      "id": "store",
+      "lane": "query",
+      "col": 5,
+      "type": "database",
+      "label": "Cache write",
+      "sublabel": "DTO under the key"
+    },
+    {
+      "id": "notify",
+      "lane": "vm",
+      "col": 5,
+      "type": "frontend",
+      "label": "State updates",
+      "sublabel": "loading → ready | error"
+    }
+  ],
+  "edges": [
+    { "id": "o1", "from": "ask", "to": "key", "label": "queryKey" },
+    { "id": "o2", "from": "key", "to": "dedupe", "label": "cache miss" },
+    { "id": "o3", "from": "dedupe", "to": "fetch", "label": "no entry", "variant": "emphasis" },
+    { "id": "o4", "from": "fetch", "to": "respond", "label": "HTTP" },
+    { "id": "o5", "from": "respond", "to": "store", "label": "200 + DTO" },
+    { "id": "o6", "from": "store", "to": "notify", "label": "cached rows" },
+    { "id": "o7", "from": "respond", "to": "retry", "label": "5xx · network" },
+    { "id": "o8", "from": "retry", "to": "fetch", "label": "backoff" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "There is no client-side outbox",
+      "items": [
+        "the outbox role is adapted here: a browser has no durable queue, so nothing is enqueued for later delivery and no message survives a reload",
+        "the query cache is in-memory only — a reload starts from an empty cache and the ViewModel asks again",
+        "durability belongs to the server, which owns the authoritative state; the client is a reader with a cache, not a writer with a spool"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The query layer owns the async path",
+      "items": [
+        "cache, revalidation, deduplication, retries and background refresh belong to the query layer (TanStack Query or the SDK's cache), not to a useEffect per component",
+        "the query key is the cache identity: stable, serializable and carrying every input — [\"leads\", tenantId, { cursor, search }]",
+        "after a mutation, invalidate by prefix ([\"leads\"]); do not refetch the world"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Optimistic writes need a rollback",
+      "items": [
+        "cancel the in-flight query for the affected key, snapshot the previous cache value, write the optimistic value, send the mutation",
+        "on success write the server's answer; on failure restore the snapshot and show the error — without the snapshot and the restore it is data loss with a spinner",
+        "rateLimited maps to retry with Retry-After; network and server errors map to a retryable error state"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Cancellation is part of the contract",
+      "items": [
+        "a manual useEffect fetch needs an AbortController, a cleanup and a guard against setting state after unmount; the query layer owns all three",
+        "the SDK method is typed and takes an abort signal, so a route change cancels the request instead of racing it",
+        "errors are values: the SDK normalizes the envelope into a typed union, the ViewModel maps each code to a screen state"
+      ]
+    }
+  ]
+}

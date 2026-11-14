@@ -1,0 +1,119 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "beautifulreact — Runtime Lifecycle",
+    "quality_profile": "showcase",
+    "output": "runtime-lifecycle.lifecycle.html"
+  },
+  "mainPath": ["mount", "render", "request", "decide", "ready"],
+  "states": [
+    {
+      "id": "mount",
+      "type": "start",
+      "label": "Component mounts",
+      "sublabel": "hooks in order",
+      "step": "01",
+      "tag": "entry"
+    },
+    {
+      "id": "render",
+      "type": "active",
+      "label": "Render the state",
+      "sublabel": "one status union",
+      "step": "02"
+    },
+    {
+      "id": "request",
+      "type": "active",
+      "label": "SDK request",
+      "sublabel": "typed call · abort",
+      "step": "03"
+    },
+    {
+      "id": "decide",
+      "type": "decision",
+      "label": "Response",
+      "sublabel": "200 · 401 · 403 · 5xx",
+      "step": "04",
+      "tag": "gate"
+    },
+    {
+      "id": "ready",
+      "type": "success",
+      "label": "Ready",
+      "sublabel": "rows rendered",
+      "step": "05",
+      "tag": "done"
+    },
+    {
+      "id": "empty",
+      "type": "neutral",
+      "label": "Empty",
+      "sublabel": "no rows",
+      "tag": "state"
+    },
+    {
+      "id": "rejected",
+      "type": "waiting",
+      "label": "Rejected",
+      "sublabel": "401 · 403",
+      "tag": "pause"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Error state",
+      "sublabel": "envelope · correlationId",
+      "tag": "terminal"
+    },
+    {
+      "id": "unmount",
+      "type": "neutral",
+      "label": "Unmount",
+      "sublabel": "abort · cleanup",
+      "tag": "terminal"
+    }
+  ],
+  "transitions": [
+    { "id": "t1", "from": "mount", "to": "render" },
+    { "id": "t2", "from": "render", "to": "request" },
+    { "id": "t3", "from": "request", "to": "decide" },
+    { "id": "t4", "from": "decide", "to": "ready", "label": "200 + rows" },
+    { "id": "t5", "from": "decide", "to": "empty", "label": "200 + none" },
+    { "id": "t6", "from": "decide", "to": "rejected", "label": "401 · 403" },
+    { "id": "t7", "from": "decide", "to": "failed", "label": "4xx · 5xx" },
+    { "id": "t8", "from": "rejected", "to": "request", "label": "401 refresh + retry" },
+    { "id": "t9", "from": "failed", "to": "request", "label": "retryable · backoff" },
+    { "id": "t10", "from": "render", "to": "unmount", "label": "route change" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Mount discipline",
+      "items": [
+        "rules-of-hooks is an error, not a warning: hooks run in the same order every render, and the empty or error branch returns after the hooks",
+        "the ViewModel hook binds the pure ViewModel to React — no business rule lives in the adapter, so the ViewModel stays testable without React",
+        "on unmount the request is aborted and the cleanup runs: no state update after unmount, no race between two effects"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The state is a closed set",
+      "items": [
+        "one discriminated union per screen: loading | empty | ready | forbidden | error — never three booleans that can contradict each other",
+        "every state has a screen: the empty state is not the error state, and the error state is not a spinner",
+        "switch-exhaustiveness-check turns a missing case into a compile error"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failures that recover",
+      "items": [
+        "401 refreshes the token once and retries, then asks the user to sign in; 403 never retries — the permission is missing",
+        "network and server errors are retryable with backoff and bounded attempts; validation errors land on the field",
+        "the correlation id travels with the failure and is shown copyable on the error screen"
+      ]
+    }
+  ]
+}

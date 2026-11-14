@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "beautifulreact — Modules & Walls",
+    "quality_profile": "showcase",
+    "output": "services-slices.architecture.html"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "src/app",
+      "sublabel": "routes · providers · error boundary",
+      "pos": [40, 100],
+      "size": [170, 60]
+    },
+    {
+      "id": "features",
+      "type": "backend",
+      "label": "src/features/<feature>",
+      "sublabel": "views · viewmodels · tests",
+      "pos": [330, 100],
+      "size": [200, 60]
+    },
+    {
+      "id": "sdk",
+      "type": "backend",
+      "label": "src/sdk",
+      "sublabel": "sdk.{userType}.{feature}.{resource}",
+      "pos": [650, 100],
+      "size": [210, 60]
+    },
+    {
+      "id": "core",
+      "type": "backend",
+      "label": "src/core",
+      "sublabel": "ports · routes · permissions",
+      "pos": [980, 100],
+      "size": [190, 60]
+    },
+    {
+      "id": "lint-walls",
+      "type": "security",
+      "label": "no-restricted-imports",
+      "sublabel": "views · viewmodels · sdk",
+      "pos": [40, 280],
+      "size": [190, 60]
+    },
+    {
+      "id": "shared",
+      "type": "backend",
+      "label": "lib/ · ui/",
+      "sublabel": "pure helpers · shared components",
+      "pos": [330, 280],
+      "size": [190, 60]
+    },
+    {
+      "id": "query",
+      "type": "cloud",
+      "label": "Query layer",
+      "sublabel": "TanStack Query or the SDK cache",
+      "pos": [650, 280],
+      "size": [200, 60]
+    },
+    {
+      "id": "tests",
+      "type": "backend",
+      "label": "tests/",
+      "sublabel": "Vitest · RTL + MSW · Playwright",
+      "pos": [40, 400],
+      "size": [190, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Feature folders",
+      "wraps": ["features"]
+    },
+    {
+      "kind": "region",
+      "label": "Shared code — promoted out of any feature",
+      "wraps": ["shared"]
+    },
+    {
+      "kind": "region",
+      "label": "The client core — no React above this line",
+      "wraps": ["sdk", "core"]
+    },
+    {
+      "kind": "region",
+      "label": "Enforcement — the walls and their proof",
+      "wraps": ["lint-walls", "tests"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "s1",
+      "from": "app",
+      "to": "features",
+      "label": "renders a route",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "s2",
+      "from": "features",
+      "to": "sdk",
+      "label": "typed call",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "s3",
+      "from": "sdk",
+      "to": "core",
+      "label": "ports · routes",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "s4",
+      "from": "features",
+      "to": "shared",
+      "label": "pure helpers",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "s5",
+      "from": "features",
+      "to": "query",
+      "label": "server state",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "s6",
+      "from": "lint-walls",
+      "to": "features",
+      "label": "guards",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "s7",
+      "from": "tests",
+      "to": "features",
+      "label": "tests",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "One feature = one backend slice",
+      "items": [
+        "the same name appears in four places: the frontend folder src/features/<feature>/, the route module /api/v1/{userType}/<feature>/..., the SDK module sdk.{userType}.{feature}.{resource} and the permission prefix <feature>.<resource>.<action>",
+        "a feature owns its views, its ViewModel hook, its route definitions and its tests; it never imports another feature's internals",
+        "when two features need the same thing it is promoted to lib/ (pure) or ui/ (shared components) — never copied into one feature and imported by the other"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The client core",
+      "items": [
+        "the SDK is a plain TypeScript client: typed methods, DTOs, error normalization, auth/tenant/correlation/idempotency headers as interceptors — never per-call code",
+        "src/core holds the ports and pure types: route builders, permission helpers, the error envelope; the SDK may import core and nothing above it",
+        "server state lives in a query layer (TanStack Query or the SDK's cache), never in a useState copy — cache, revalidation, dedupe, retries and background refresh belong to that layer"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "The walls, and their proof",
+      "items": [
+        "views may not import the SDK; viewmodels may not import react-dom, react-native, chrome.* or a router; the SDK may not import React — no-restricted-imports overrides enforce all three",
+        "lints/check/ is the violation harness: one deliberate file per rule with a // expect:<rule> marker plus a clean control; scripts/check-lints.sh fails if a marked rule stays quiet or an unmarked one fires",
+        "the fix for a wall violation is to re-cut the layout, never to weaken, rename or delete the rule and never to silence it with a described disable"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "What ships here",
+      "items": [
+        "this repository ships the contract, not an application: the module layout above is the layout the skills teach and the lint config guards",
+        "the testing pyramid: plain Vitest for core, ViewModel and SDK; React Testing Library with MSW at the network boundary for views; a thin Playwright suite for journeys that cross pages",
+        "when the skill and the config disagree, the config wins and the skill text is fixed — the machine gate is the truth"
+      ]
+    }
+  ]
+}

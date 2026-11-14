@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "beautifulreact — Container Architecture",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "all",
+        "label": "All",
+        "focus": [
+          "agent-runtime",
+          "skills",
+          "lints",
+          "ci",
+          "web-app",
+          "sdk",
+          "api",
+          "vm-ports",
+          "core-ports",
+          "browser-store"
+        ],
+        "note": "The delivery mechanism (skills, drop-in lints, CI gates) on the left; the application it produces on the right."
+      },
+      {
+        "id": "runtime",
+        "label": "Runtime",
+        "focus": ["web-app", "sdk", "api", "vm-ports", "core-ports", "browser-store"],
+        "note": "View → ViewModel → SDK → Backend API, with every platform difference injected through a port."
+      },
+      {
+        "id": "walls",
+        "label": "Walls",
+        "focus": ["web-app", "sdk", "vm-ports", "lints", "ci"],
+        "note": "no-restricted-imports pins the three walls; scripts/check-lints.sh proves every rule fires."
+      },
+      {
+        "id": "delivery",
+        "label": "Delivery",
+        "focus": ["agent-runtime", "skills", "lints", "ci"],
+        "note": "Three skills load into the agent; the drop-in config and the CI jobs make the contract checkable."
+      }
+    ],
+    "output": "c4-containers.html"
+  },
+  "components": [
+    {
+      "id": "agent-runtime",
+      "type": "external",
+      "label": "Agent runtime",
+      "sublabel": "Claude Code · Codex · Copilot",
+      "pos": [30, 120],
+      "size": [180, 60]
+    },
+    {
+      "id": "skills",
+      "type": "backend",
+      "label": "Agent Skills",
+      "sublabel": "best-practices · review · port",
+      "pos": [30, 240],
+      "size": [190, 60]
+    },
+    {
+      "id": "lints",
+      "type": "backend",
+      "label": "ESLint drop-in",
+      "sublabel": "layer walls · hooks · a11y",
+      "pos": [30, 360],
+      "size": [180, 60]
+    },
+    {
+      "id": "ci",
+      "type": "cloud",
+      "label": "CI gates",
+      "sublabel": "check · lints · examples · tests",
+      "pos": [30, 480],
+      "size": [170, 60]
+    },
+    {
+      "id": "web-app",
+      "type": "frontend",
+      "label": "React app",
+      "sublabel": "View · ViewModel",
+      "pos": [355, 240],
+      "size": [150, 60]
+    },
+    {
+      "id": "sdk",
+      "type": "backend",
+      "label": "Shared SDK",
+      "sublabel": "typed client · DTOs · errors",
+      "pos": [670, 240],
+      "size": [160, 60]
+    },
+    {
+      "id": "api",
+      "type": "external",
+      "label": "Backend API",
+      "sublabel": "/api/v1/{userType}/{feature}",
+      "pos": [990, 240],
+      "size": [190, 60]
+    },
+    {
+      "id": "vm-ports",
+      "type": "backend",
+      "label": "ViewModel ports",
+      "sublabel": "Navigator · Notifier · Permissions",
+      "pos": [355, 400],
+      "size": [170, 60]
+    },
+    {
+      "id": "core-ports",
+      "type": "backend",
+      "label": "Core ports",
+      "sublabel": "TokenStore · Transport · Clock",
+      "pos": [670, 400],
+      "size": [160, 60]
+    },
+    {
+      "id": "browser-store",
+      "type": "database",
+      "label": "Browser storage",
+      "sublabel": "httpOnly cookie · in-memory token",
+      "pos": [990, 400],
+      "size": [190, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Delivery — skills, lints, CI gates",
+      "wraps": ["skills", "lints", "ci"]
+    },
+    {
+      "kind": "region",
+      "label": "The consuming application",
+      "wraps": ["web-app", "sdk", "vm-ports", "core-ports"]
+    },
+    {
+      "kind": "region",
+      "label": "External systems",
+      "wraps": ["api", "browser-store"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "k1",
+      "from": "agent-runtime",
+      "to": "skills",
+      "label": "loads",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "k2",
+      "from": "skills",
+      "to": "lints",
+      "label": "same rules",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "k3",
+      "from": "lints",
+      "to": "ci",
+      "label": "must fire",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "k4",
+      "from": "skills",
+      "to": "web-app",
+      "label": "agent writes the app",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "k5",
+      "from": "web-app",
+      "to": "sdk",
+      "label": "sdk.app.funnels.leads.list()",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "k6",
+      "from": "sdk",
+      "to": "api",
+      "label": "HTTP · auth + tenant headers",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "k7",
+      "from": "web-app",
+      "to": "vm-ports",
+      "label": "injected",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "k8",
+      "from": "sdk",
+      "to": "core-ports",
+      "label": "Transport · Clock",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "k9",
+      "from": "core-ports",
+      "to": "browser-store",
+      "label": "TokenStore read/write",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The layer contract",
+      "items": [
+        "View → ViewModel → SDK → Backend API: the View renders and forwards events, the ViewModel owns presentation state and commands, the SDK is a plain TypeScript client",
+        "the walls are lint rules, not suggestions — no-restricted-imports pins views (no SDK, no fetch, no token), viewmodels (no react-dom, react-native, chrome.*, router) and sdk (no React)",
+        "platform differences enter through ports: TokenStore, Transport and Clock for the SDK; Navigator, Notifier and Permissions for the ViewModel"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The delivery mechanism",
+      "items": [
+        "three skills ship: react-best-practices loads on every React edit, react-review writes a prioritized report, react-port ports another framework with the tests first",
+        "lints/eslint.config.mjs is a copy-in ESLint 9 flat config; lints/check/ is the violation harness — one deliberate file per rule with a // expect:<rule> marker plus a clean control",
+        "scripts/check-lints.sh fails if a marked rule stays quiet, if anything unmarked fires, or if tsc --noEmit fails on the same files; CI runs it as the lints job"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "State, errors and trust",
+      "items": [
+        "one status union per screen — loading | empty | ready | forbidden | error — never three booleans that can contradict each other",
+        "the error envelope is { error: { code, message, requiredPermission?, correlationId } }; the SDK normalizes it into a typed union and the correlation id is copyable on the error screen",
+        "authorization is server-side: the UI hides an action with can(\"leads.delete\"), the API rejects the request regardless of what the client renders"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "What this repo is not",
+      "items": [
+        "there is no runtime here: the skills are instructions and reference text only — no network calls, no data collected (PRIVACY.md)",
+        "there is no backend, no database and no queue in this repository; the Backend API is an external system the taught contract talks to",
+        "the package is a plugin: plugin.json carries the com.openai interface block, and scripts/package-openai-plugin.py ships it to Codex and ChatGPT"
+      ]
+    }
+  ]
+}

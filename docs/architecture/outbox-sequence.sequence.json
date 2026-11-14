@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "beautifulreact — Async Delivery Sequence (query cache)",
+    "quality_profile": "showcase",
+    "output": "outbox-sequence.sequence.html"
+  },
+  "participants": [
+    { "id": "vm", "type": "backend", "label": "ViewModel", "sublabel": "hook · state union" },
+    { "id": "query", "type": "database", "label": "Query cache", "sublabel": "in-memory · keys" },
+    { "id": "sdk", "type": "backend", "label": "SDK", "sublabel": "typed client" },
+    { "id": "api", "type": "external", "label": "Backend API", "sublabel": "the authority" }
+  ],
+  "segments": [
+    { "from": 160, "to": 366, "label": "First load — cache miss to ready" },
+    { "from": 380, "to": 560, "label": "Mutation, invalidate, retry" }
+  ],
+  "messages": [
+    {
+      "id": "q1",
+      "from": "vm",
+      "to": "query",
+      "y": 170,
+      "label": "subscribe(queryKey) · state = loading",
+      "variant": "emphasis"
+    },
+    { "id": "q2", "from": "query", "to": "sdk", "y": 206, "label": "cache miss → one request per key" },
+    { "id": "q3", "from": "sdk", "to": "api", "y": 242, "label": "GET /api/v1/app/funnels/leads" },
+    { "id": "q4", "from": "api", "to": "sdk", "y": 278, "label": "200 { items, nextCursor }", "variant": "return" },
+    { "id": "q5", "from": "sdk", "to": "query", "y": 314, "label": "store the DTO under the key" },
+    { "id": "q6", "from": "query", "to": "vm", "y": 350, "label": "state = ready · rows", "variant": "return" },
+    {
+      "id": "q7",
+      "from": "vm",
+      "to": "query",
+      "y": 396,
+      "label": "mutation → snapshot, then optimistic write"
+    },
+    { "id": "q8", "from": "query", "to": "sdk", "y": 432, "label": "invalidate by prefix → refetch" },
+    { "id": "q9", "from": "sdk", "to": "api", "y": 468, "label": "PUT /api/v1/app/funnels/leads/{id}" },
+    { "id": "q10", "from": "api", "to": "sdk", "y": 504, "label": "500 · 5xx", "variant": "return" },
+    {
+      "id": "q11",
+      "from": "sdk",
+      "to": "query",
+      "y": 540,
+      "label": "retry with backoff · restore the snapshot"
+    }
+  ],
+  "activations": [
+    { "participant": "vm", "from": 164, "to": 360, "type": "backend" },
+    { "participant": "query", "from": 164, "to": 320, "type": "database" },
+    { "participant": "sdk", "from": 200, "to": 320, "type": "backend" },
+    { "participant": "api", "from": 236, "to": 288, "type": "external" },
+    { "participant": "vm", "from": 390, "to": 404, "type": "backend" },
+    { "participant": "query", "from": 390, "to": 548, "type": "database" },
+    { "participant": "sdk", "from": 426, "to": 548, "type": "backend" },
+    { "participant": "api", "from": 462, "to": 512, "type": "external" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "The outbox role, adapted",
+      "items": [
+        "there is no client-side outbox: a browser cannot durably enqueue work, so nothing is spooled for later delivery",
+        "the query cache is the only client-side state beyond the credential — in-memory, keyed, and lost on reload",
+        "the durable store is the server; the client is a reader with a cache"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The query layer owns the async path",
+      "items": [
+        "the key is the cache identity: stable, serializable and carrying every input — [\"leads\", tenantId, { cursor, search }]",
+        "in-flight requests are deduplicated per key; after a mutation the layer invalidates by prefix instead of refetching the world",
+        "an abort signal rides the SDK call, so a route change cancels the request instead of racing it"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failure is a state, not a crash",
+      "items": [
+        "5xx or a network error retries with backoff; rateLimited honours Retry-After",
+        "an optimistic write is snapshotted before it is applied and restored on failure — without both steps it is data loss with a spinner",
+        "the ViewModel maps the failure to the error state and shows the copyable correlation id"
+      ]
+    }
+  ]
+}

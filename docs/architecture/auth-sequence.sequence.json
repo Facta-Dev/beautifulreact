@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "beautifulreact — Auth & Session Sequence",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "request",
+        "label": "Request",
+        "focus": ["user", "view", "vm", "sdk", "token", "api"],
+        "note": "The View asks its ViewModel; only the SDK touches the credential and the network."
+      },
+      {
+        "id": "decision",
+        "label": "Decision",
+        "focus": ["api", "sdk", "vm", "view"],
+        "note": "The server answers 200, 401 or 403; the ViewModel maps the answer to exactly one screen state."
+      }
+    ],
+    "output": "auth-sequence.sequence.html"
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "User", "sublabel": "browser" },
+    { "id": "view", "type": "frontend", "label": "View", "sublabel": "JSX · a11y" },
+    { "id": "vm", "type": "backend", "label": "ViewModel", "sublabel": "hook · state union" },
+    { "id": "sdk", "type": "backend", "label": "SDK", "sublabel": "typed client" },
+    { "id": "token", "type": "database", "label": "TokenStore", "sublabel": "memory · httpOnly cookie" },
+    { "id": "api", "type": "external", "label": "Backend API", "sublabel": "the authority" }
+  ],
+  "segments": [
+    { "from": 160, "to": 330, "label": "Request path" },
+    { "from": 336, "to": 500, "label": "Response path" }
+  ],
+  "messages": [
+    { "id": "m1", "from": "user", "to": "view", "y": 170, "label": "opens /leads" },
+    { "id": "m2", "from": "view", "to": "vm", "y": 206, "label": "useLeads() → state = loading" },
+    { "id": "m3", "from": "vm", "to": "sdk", "y": 242, "label": "sdk.app.funnels.leads.list()" },
+    { "id": "m4", "from": "sdk", "to": "token", "y": 278, "label": "getToken()" },
+    {
+      "id": "m5",
+      "from": "token",
+      "to": "sdk",
+      "y": 314,
+      "label": "token · memory or httpOnly cookie",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "sdk",
+      "to": "api",
+      "y": 350,
+      "label": "GET /api/v1/app/funnels/leads",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "sdk",
+      "y": 386,
+      "label": "200 { items } | 401 | 403 { error }",
+      "variant": "return"
+    },
+    { "id": "m8", "from": "sdk", "to": "vm", "y": 422, "label": "DTO | normalized error union" },
+    { "id": "m9", "from": "vm", "to": "view", "y": 458, "label": "state = ready | empty | forbidden | error" },
+    { "id": "m10", "from": "view", "to": "user", "y": 494, "label": "renders one state", "variant": "emphasis" }
+  ],
+  "activations": [
+    { "participant": "view", "from": 164, "to": 500, "type": "frontend" },
+    { "participant": "vm", "from": 200, "to": 470, "type": "backend" },
+    { "participant": "sdk", "from": 236, "to": 430, "type": "backend" },
+    { "participant": "token", "from": 272, "to": 322, "type": "database" },
+    { "participant": "api", "from": 344, "to": 396, "type": "external" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "One way through the layers",
+      "items": [
+        "the View never calls the SDK and never reads a token: it renders a state and forwards an event, and the lint config rejects a fetch inside **/views/**",
+        "the ViewModel owns the SDK call, the status union and the retry; the hook only subscribes and schedules",
+        "the SDK never imports React, so the same client runs in the app, in a CLI and in a test runner"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The credential boundary",
+      "items": [
+        "the credential is read through the TokenStore port, never from the View — a token in the bundle is a public token",
+        "auth, tenant, correlation, idempotency and client-info headers are interceptors on the SDK, not code repeated per call",
+        "no secret ever ships to the browser: tokens live in memory or in an httpOnly cookie"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "One answer, one state",
+      "items": [
+        "200 with rows → ready; 200 without rows → empty; 403 → forbidden; 401 → refresh once and retry; anything else → a retryable error",
+        "the envelope is { error: { code, message, requiredPermission?, correlationId } }; the SDK normalizes it, the ViewModel maps it, the View renders it",
+        "the correlation id is shown copyable on the error screen, and a client error is reported without personal data — no token, no payload"
+      ]
+    }
+  ]
+}
