@@ -25,6 +25,21 @@ and any other agent that reads the Agent Skills format. Every rule in the
 lint config is proven to fire, and every JSX example is reviewed against the
 same contract the skills teach.
 
+## The playbooks
+
+These skills are the runnable, machine-checked enforcement of the
+[facta playbooks](https://github.com/Facta-Dev/ai-coding-playbook). That
+repository carries the sixteen root playbooks — backend, Java/J2EE, frontend,
+React Native, Android/Kotlin, iOS/Swift, desktop Qt, CLI, Chrome extension,
+URLs, tests, security, audit, install, REA and the Claude Code kit — plus the
+nine runnable kits (Go, Rust, Node.js, Python, Java, extension, desktop,
+frontend-mobile, mobile-android), the model-routing guide and the
+instruction-budget tooling. Start with
+[`PLAYBOOK_FRONTEND.md`](https://github.com/Facta-Dev/ai-coding-playbook/blob/main/PLAYBOOK_FRONTEND.md)
+for this stack, then use this repository as the worked example. The shared
+contracts (`PLAYBOOK_URLS.md`, `PLAYBOOK_TESTS.md`, `PLAYBOOK_SECURITY.md`,
+`PLAYBOOK_AUDIT.md`, `PLAYBOOK_CLAUDE_CODE.md`) apply across the series.
+
 ## Why
 
 React is easy to start and hard to keep clean. The expensive bugs are rarely
