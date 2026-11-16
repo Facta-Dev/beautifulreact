@@ -62,6 +62,22 @@ Beautiful React is the contract that catches those before review:
   without a name, or a form field without a label is a finding, not a
   preference.
 
+## Agent kit (Claude Code)
+
+This repo carries the `{kit}` kit plane from
+[`ai-coding-playbook`](https://github.com/Facta-Dev/ai-coding-playbook):
+`.claude/agents`, `.claude/skills`, `.claude/commands`, and the
+`model-routing:ollama` block in `CLAUDE.md`.
+
+Verify or repair the wiring from the playbook checkout:
+
+```
+bash ai-coding-playbook/scripts/claude-kit/configure-repo.sh . --kit={kit} --check
+```
+
+`configure-repo.sh` is idempotent, never deletes, and backs up
+`.claude/settings.json` under `.claude/backups/` before any merge.
+
 ## Install
 
 ### Claude Code
