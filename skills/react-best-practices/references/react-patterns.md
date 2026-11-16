@@ -80,6 +80,9 @@ should survive refresh, back/forward, and sharing.
 - Serialize with a schema (zod) at the route boundary; an invalid query string
   falls back to defaults and is corrected in the URL.
 - A local UI toggle (a dropdown open) is not URL state.
+- A route guard's redirect is routing behavior, not URL state; the one-shot
+  rule and its failure mode live in `references/frontend-architecture.md` §5
+  (Routes and permissions).
 
 ## 6. Query keys are cache identity
 
@@ -92,6 +95,14 @@ queryKey: ["leads", tenantId, { cursor, search }]
 
 - An object with a new identity every render is not a new key if it
   serializes the same; a key that omits `search` serves the wrong cache entry.
+- **One key, one shape, one argument set.** Never share a key between a
+  single-page query and an infinite query, or between two fetches that differ
+  in page size, scope or limit: the entry written by one is read as the data
+  of the other. The infinite observer receives a plain page where it expects
+  `{ pages, pageParams }`, so the view that reads `data.pages` throws; the
+  single-page observer receives `InfiniteData` and renders the wrong rows.
+  Give each read its own key and keep a shared prefix for invalidation, e.g.
+  `["leads"]`, `["leads", "list"]`, `["leads", "dashboard"]`.
 - Invalidate by prefix (`["leads"]`) after a mutation; do not refetch the
   world.
 - Server state belongs in the query cache, not in `useState` copied from it.
@@ -143,6 +154,9 @@ the dialog.
 - Query by role, label and text; assert what the user sees.
 - Mock the network with MSW, not the SDK module.
 - One test per screen state; one per form failure; one per critical journey.
+- Test the redirect boot path: land on the guarded URL with the real router
+  and assert the role home renders. A redirect that only works when the target
+  is already cached passes manual clicks and freezes the first load.
 - `findBy*` for async; no arbitrary sleeps; no `act()` warnings.
 - A golden snapshot is reviewed like code.
 

@@ -33,5 +33,12 @@ All notable changes to this project are listed here. Versions follow
   CI-gate layers.
 - **A worked review.** `examples/review-inventory.md` shows the report shape
   and the architecture-first ranking on a small inventory screen.
+- **Four failure-mode rules from a production console.** Guards redirect once
+  per mount (a `Navigate` component re-firing while a lazy target loads
+  livelocks the renderer), one query key can only hold one data shape (a
+  single-page query poisons an infinite query on the same key), a run-once
+  effect must not lose its async result to StrictMode's remount, and an
+  import-boundary gate must ban package subpaths (`^pkg(\/|$)` in custom
+  gates).
 
 [Unreleased]: https://github.com/Facta-Dev/beautifulreact/compare/v0.1.0...HEAD

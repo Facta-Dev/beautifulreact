@@ -96,6 +96,14 @@ schedules.
   namespace, never a security decision.
 - A route guard hides or redirects for UX; the API rejects the request
   regardless of what the client renders.
+- A guard's redirect is one-shot. A redirect that re-navigates on every
+  render (TanStack Router's `<Navigate>` re-fires because its props object is
+  new each render) starts a navigation that supersedes the pending one before
+  it commits, so a route whose chunk is loading never renders and the tab
+  freezes; React Router's `Navigate` fires once per mount unless the path or
+  `state` identity changes. Redirect in `beforeLoad`/loader where the decision
+  allows it; when it needs React state, navigate in an effect behind a ref so
+  it runs exactly once.
 - A permission is checked to shape the UI (`can("leads.delete")`); the
   backend is the authority.
 - Deep links and URLs are parsed with a schema; an unknown route renders a
@@ -134,6 +142,15 @@ schedules.
 | Accessible controls | `jsx-a11y/alt-text`, `jsx-a11y/anchor-is-valid` |
 | No silenced types | `@typescript-eslint/ban-ts-comment` |
 | No unlimited disables | `@eslint-community/eslint-comments/*` |
+
+- **A boundary gate is code and needs a failing fixture.** A custom regex gate
+  anchored at the bare package name (`^pkg$`) lets `pkg/subpath` through
+  silently: ban the prefix there (`^pkg(\/|$)`). An ESLint
+  `no-restricted-imports` `group` pattern is gitignore-style, not regex: a
+  bare `pkg` already covers `pkg/subpath` (keep that one entry), while the
+  exact `paths` form and a `^pkg$` regex do not. Prove the gate with a
+  deliberate violation in `lints/check/src` that imports a subpath specifier
+  and carries `// expect:no-restricted-imports`.
 
 When a change needs an exception, re-cut the layout; do not add a path to the
 exception list. A config exception is a contract change and needs the same

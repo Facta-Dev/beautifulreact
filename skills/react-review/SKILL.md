@@ -83,6 +83,12 @@ it.
   explaining the error.
 - A status modeled as booleans instead of one discriminated union.
 - `key` missing on an array of elements, or a key that changes every render.
+- A guard that re-fires its redirect on every render — typically while the
+  target route's chunk is still loading — so the pending navigation restarts
+  each time; the redirect must run once per mount.
+- Two queries sharing one key with different shapes or fetch arguments
+  (single page vs infinite, different page size); one poisons the other's
+  cache.
 
 ### Hooks
 
@@ -95,6 +101,10 @@ it.
 - `useMemo`/`useCallback` with no measured cost, or memoizing a value whose
   identity already changes every render.
 - A ref used to store state or mirror props.
+- A ref-guarded one-shot effect that discards its async result on a cleanup
+  flag: the StrictMode remount flips the flag before the promise settles and
+  the second run exits on the guard, so the screen never leaves its loading or
+  signed-out state in development.
 
 ### Accessibility
 
@@ -153,6 +163,9 @@ Look for:
   `@ts-nocheck`.
 - A lint rule turned off in `eslint.config.mjs`, a path removed from the
   layer overrides, or a `no-restricted-imports` exception added for one file.
+- A banned-import matcher narrowed to the bare package name (`^pkg$` in a
+  custom gate), which still passes its own fixture but lets `pkg/subpath`
+  through silently.
 - A skipped test (`.skip`, `.todo`, `xit`) without an owner and an expiry.
 - A `tsconfig` strictness flag turned off; `any` introduced at a boundary.
 - A snapshot regenerated without reading the diff; a coverage threshold

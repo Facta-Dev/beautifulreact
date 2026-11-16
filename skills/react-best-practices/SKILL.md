@@ -104,6 +104,14 @@ npx vitest run
   belongs in the dependency array. Do not lie to satisfy the linter; if the
   array is unstable, make the value stable (`useCallback`, a ref, or move the
   function out). `react-hooks/exhaustive-deps` is non-negotiable.
+- **StrictMode remounts effects in development on purpose.** A ref-guarded
+  one-shot effect (boot refresh, one-shot subscription) whose only in-flight
+  request is discarded by a cleanup `cancelled` flag loses that result: the
+  simulated unmount flips the flag before the promise settles and the second
+  run exits on the guard, so the app stays on its signed-out or loading state
+  in development. Declare the flag inside the effect so each run owns one, or
+  drop it and let the ref guard the single request; keep the abort/cleanup §7
+  asks for on effects that re-run.
 - **Custom hooks extract behavior, not markup.** `useLeadDetail(id)` returns
   `{ status, lead, retry }`; it does not return JSX. A custom hook that calls
   another custom hook is fine; one that hides a component boundary is not.
