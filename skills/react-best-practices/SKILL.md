@@ -14,6 +14,11 @@ description: >-
 
 # React best practices
 
+> Playbook set: start with [`PLAYBOOK_MASTER.md`](https://github.com/Facta-Dev/ai-coding-playbook/blob/main/PLAYBOOK_MASTER.md) —
+> the catalog, precedence and cross-playbook invariants — then
+> [`PLAYBOOK_FRONTEND.md`](https://github.com/Facta-Dev/ai-coding-playbook/blob/main/PLAYBOOK_FRONTEND.md). This skill is the runnable companion of that
+> contract.
+
 Distilled from the React 19 documentation, the patterns the React team and the
 community converged on, and the facta frontend architecture contract. The
 digests live in `references/`; where sources disagree, this file says which to
