@@ -1,5 +1,5 @@
 ---
-name: "<app> Add Slice"
+name: add-slice
 description: "Scaffold a new feature slice in the <app> frontend - the view, the shared ViewModel, the SDK resource and the route - wired to the route contract with the fake-backed test gate, as one change."
 division: core
 ---

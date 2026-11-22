@@ -1,5 +1,5 @@
 ---
-name: "<app> State Contract"
+name: state-contract
 description: "Write or verify a ViewModel in the <app> frontend - the state and commands, the explicit status, ports for side effects and no platform global - so it stays shared across web and native."
 division: client
 ---

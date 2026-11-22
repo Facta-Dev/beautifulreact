@@ -1,5 +1,5 @@
 ---
-name: "<app> Review"
+name: review
 description: "Runs the <app> frontend pre-landing checklist - layer boundaries, SDK contract, route contract, port boundary, gate hygiene and test adequacy - producing a severity-ranked verdict against `make ci`."
 division: core
 ---

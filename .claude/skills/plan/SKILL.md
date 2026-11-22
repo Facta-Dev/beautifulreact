@@ -1,5 +1,5 @@
 ---
-name: "<app> Plan"
+name: plan
 description: "Writes the <app> plan document under docs/plans/ - problem, constraints, design, files, risks, tests and gate commands - as an ordered, verifiable sequence that ends at `make ci`."
 division: core
 ---

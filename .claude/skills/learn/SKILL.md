@@ -1,5 +1,5 @@
 ---
-name: "<app> Learn"
+name: learn
 description: "Appends a one-line lesson to the <app> frontend's project-local .claude/learnings.jsonl and shows how to consult the prior entries before repeating similar work."
 division: core
 ---

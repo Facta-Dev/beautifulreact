@@ -1,5 +1,5 @@
 ---
-name: "<app> Add Route"
+name: add-route
 description: "Add a route to the <app> web SPA - the path from the URL playbook, its {userType} layout and guard, the core route builder and the code-split - as one gated change."
 division: core
 ---

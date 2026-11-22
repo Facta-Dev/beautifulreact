@@ -1,5 +1,5 @@
 ---
-name: "<app> SDK Contract"
+name: sdk-contract
 description: "Add or verify an SDK resource in the <app> frontend - namespace mirrors the URL playbook, types generated from OpenAPI, transport interceptors and the typed SdkError envelope - as one gated change."
 division: client
 ---

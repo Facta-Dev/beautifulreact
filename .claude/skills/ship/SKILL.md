@@ -1,5 +1,5 @@
 ---
-name: "<app> Ship"
+name: ship
 description: "Prepares the <app> frontend release - the green gate evidence, the version bump in package.json, the changelog entry and the pull request body - without publishing, deploying or committing on its own."
 division: core
 ---
