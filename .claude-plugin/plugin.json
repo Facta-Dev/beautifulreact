@@ -1,6 +1,6 @@
 {
   "name": "beautiful-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Write, review, port, and enforce idiomatic React 19 + TypeScript: three skills distilled from the React 19 documentation, the React patterns handbook, the TypeScript strict handbook, and the facta frontend handbook, plus a drop-in eslint config.",
   "license": "MIT",
   "author": {
